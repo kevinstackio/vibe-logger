@@ -38,7 +38,7 @@ install_vibe_logger() {
 
   # Merge hook into settings.json
   SCRIPT_PATH="$PLUGIN_DIR/session-stop"
-  python3 - "$SETTINGS" "$SCRIPT_PATH" <<'PYEOF'
+  python3 - "$SETTINGS" "$SCRIPT_PATH" "$PLUGIN_DIR" <<'PYEOF'
 import json, sys
 
 settings_path = sys.argv[1]
@@ -67,7 +67,7 @@ with open(settings_path, 'w') as f:
     json.dump(settings, f, indent=2)
     f.write('\n')
 
-print("VibeLogger v" + open("$PLUGIN_DIR/config.json").read().split('"')[3] + " installed ✓")
+print("VibeLogger v" + open(sys.argv[2] + "/config.json").read().split('"')[3] + " installed ✓")
 PYEOF
 }
 
