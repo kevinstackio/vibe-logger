@@ -4,9 +4,9 @@ set -e
 ACTION="${1:-install}"
 SETTINGS="$HOME/.claude/settings.json"
 PLUGIN_DIR="$HOME/.claude/vibe-logger"
+SKILL_DIR="$HOME/.claude/skills/vibe-logger"
 SCRIPT_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/hooks/session-stop"
 SKILL_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/skills/vibe-logger/SKILL.md"
-SKILL_DIR="$HOME/.claude/skills/vibe-logger"
 VERSION_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/VERSION"
 
 install_vibe_logger() {
@@ -36,13 +36,14 @@ install_vibe_logger() {
     echo '{}' > "$SETTINGS"
   fi
 
-  # Merge hook into settings.json
-  SCRIPT_PATH="$PLUGIN_DIR/session-stop"
-  python3 - "$SETTINGS" "$SCRIPT_PATH" "$PLUGIN_DIR" <<'PYEOF'
+  # Merge hook into settings.json via temp Python file
+  TMPPY=$(mktemp /tmp/vibe-install.XXXXXX.py)
+  cat > "$TMPPY" << 'PYEOF'
 import json, sys
 
 settings_path = sys.argv[1]
 script_path = sys.argv[2]
+plugin_dir = sys.argv[3]
 
 with open(settings_path, 'r') as f:
     settings = json.load(f)
@@ -67,16 +68,19 @@ with open(settings_path, 'w') as f:
     json.dump(settings, f, indent=2)
     f.write('\n')
 
-print("VibeLogger v" + open(sys.argv[2] + "/config.json").read().split('"')[3] + " installed ✓")
+version = open(plugin_dir + "/config.json").read().split('"')[3]
+print("VibeLogger v" + version + " installed ✓")
 PYEOF
+  python3 "$TMPPY" "$SETTINGS" "$PLUGIN_DIR/session-stop" "$PLUGIN_DIR"
+  rm -f "$TMPPY"
 }
 
 uninstall_vibe_logger() {
   echo "Uninstalling VibeLogger..."
 
-  # Remove hook from settings.json
   if [ -f "$SETTINGS" ]; then
-    python3 - "$SETTINGS" <<'PYEOF'
+    TMPPY=$(mktemp /tmp/vibe-uninstall.XXXXXX.py)
+    cat > "$TMPPY" << 'PYEOF'
 import json, sys
 
 settings_path = sys.argv[1]
@@ -100,11 +104,11 @@ with open(settings_path, 'w') as f:
 
 print("VibeLogger uninstalled ✓")
 PYEOF
+    python3 "$TMPPY" "$SETTINGS"
+    rm -f "$TMPPY"
   fi
 
-  # Remove plugin and skill files
-  rm -rf "$PLUGIN_DIR"
-  rm -rf "$SKILL_DIR"
+  rm -rf "$PLUGIN_DIR" "$SKILL_DIR"
   echo "Removed ~/.claude/vibe-logger and ~/.claude/skills/vibe-logger"
 }
 
