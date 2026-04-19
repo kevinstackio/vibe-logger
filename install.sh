@@ -7,6 +7,7 @@ PLUGIN_DIR="$HOME/.claude/vibe-logger"
 SCRIPT_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/hooks/session-stop"
 SKILL_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/skills/vibe-logger/SKILL.md"
 SKILL_DIR="$HOME/.claude/skills/vibe-logger"
+VERSION_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/VERSION"
 
 install_vibe_logger() {
   echo "Installing VibeLogger..."
@@ -24,6 +25,10 @@ install_vibe_logger() {
   # Install skill
   mkdir -p "$SKILL_DIR"
   curl -fsSL "$SKILL_URL" -o "$SKILL_DIR/SKILL.md"
+
+  # Save config with version
+  VERSION=$(curl -fsSL "$VERSION_URL" | tr -d '[:space:]')
+  echo "{\"version\": \"$VERSION\"}" > "$PLUGIN_DIR/config.json"
 
   # Create settings file if not exists
   if [ ! -f "$SETTINGS" ]; then
@@ -62,7 +67,7 @@ with open(settings_path, 'w') as f:
     json.dump(settings, f, indent=2)
     f.write('\n')
 
-print("VibeLogger installed ✓")
+print("VibeLogger v" + open("$PLUGIN_DIR/config.json").read().split('"')[3] + " installed ✓")
 PYEOF
 }
 
