@@ -1,0 +1,13 @@
+{
+  "name": "vibe-logger",
+  "owner": {
+    "name": "Kevin",
+    "url": "https://github.com/kevinstack"
+  },
+  "plugins": [
+    {
+      "name": "vibe-logger",
+      "source": "./"
+    }
+  ]
+}

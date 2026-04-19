@@ -1,0 +1,25 @@
+#!/bin/bash
+TS=$(date "+%Y-%m-%d_%H-%M-%S")
+PROJECT_NAME=$(basename "$PWD")
+LOG_DIR="$PWD/.vibe-logs"
+
+mkdir -p "$LOG_DIR"
+
+BRANCH=$(git branch --show-current 2>/dev/null || echo "N/A")
+COMMITS=$(git log --oneline -10 2>/dev/null | sed "s/^/- /" || echo "- No commits")
+DIFF=$(git diff --stat HEAD 2>/dev/null || echo "No changes tracked")
+
+cat > "$LOG_DIR/$TS.md" <<ENTRY
+## $TS
+
+**Project:** $PROJECT_NAME
+**Branch:** \`$BRANCH\`
+**Tool:** Claude Code
+**Summary:** *(auto-logged on session stop)*
+
+### Commits
+$COMMITS
+
+### Files touched
+$DIFF
+ENTRY

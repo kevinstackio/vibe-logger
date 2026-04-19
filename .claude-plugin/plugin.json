@@ -1,0 +1,10 @@
+{
+  "name": "vibe-logger",
+  "version": "1.0.0",
+  "description": "Auto-logs every vibe coding session to vibe-logs/ in your project or ~/.vibe-logs/ globally.",
+  "author": "Kevin",
+  "homepage": "https://github.com/kevinstackio/vibe-logger",
+  "repository": "https://github.com/kevinstackio/vibe-logger",
+  "license": "MIT",
+  "keywords": ["logging", "session", "vibe-coding", "productivity"]
+}
