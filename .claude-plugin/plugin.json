@@ -1,8 +1,11 @@
 {
   "name": "vibe-logger",
+  "description": "Auto-logs every vibe coding session to .vibe-logs/ in your project.",
   "version": "1.0.0",
-  "description": "Auto-logs every vibe coding session to vibe-logs/ in your project or ~/.vibe-logs/ globally.",
-  "author": "Kevin",
+  "author": {
+    "name": "kevinstackio",
+    "email": "kevinstack.dev@gmail.com"
+  },
   "homepage": "https://github.com/kevinstackio/vibe-logger",
   "repository": "https://github.com/kevinstackio/vibe-logger",
   "license": "MIT",

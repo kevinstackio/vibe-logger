@@ -1,13 +1,20 @@
 {
-  "name": "vibe-logger",
+  "name": "vibe-logger-marketplace",
+  "description": "Marketplace for vibe-logger: auto-log every vibe coding session",
   "owner": {
-    "name": "Kevin",
-    "url": "https://github.com/kevinstack"
+    "name": "kevinstackio",
+    "email": "kevinstack.dev@gmail.com"
   },
   "plugins": [
     {
       "name": "vibe-logger",
-      "source": "./"
+      "description": "Auto-logs every vibe coding session to .vibe-logs/ in your project.",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "kevinstackio",
+        "email": "kevinstack.dev@gmail.com"
+      }
     }
   ]
 }
