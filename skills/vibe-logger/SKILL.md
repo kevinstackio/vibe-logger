@@ -16,37 +16,41 @@ Generate per-day per-author log files for the current project.
 
 ### Steps
 
-1. Get context:
+1. Get author and project path:
    ```bash
    git config user.name 2>/dev/null | tr ' ' '_' || whoami
    pwd
    ```
 
-2. Run the parser:
-   ```bash
-   python3 ~/.claude/skills/vibe-logger/scripts/parse_sessions.py "$PWD"
-   ```
-   Output is JSON: `{ "YYYY-MM-DD": [ {timestamp, role, content, tool} ] }`
+2. Find all JSONL files from CC and Codex:
+   - CC: `~/.claude/projects/*/*.jsonl`
+   - Codex: `~/.codex/sessions/**/*.jsonl`
 
-3. For each date in the output, write `.vibe-logs/YYYY-MM-DD_{author}.md`:
+3. For each JSONL file, read it and filter messages where `cwd` matches current `$PWD`:
+   - CC: user entries have `"type": "user"` with `"cwd"` field
+   - Codex: look for `"type": "turn_context"` with `"payload.cwd"` to confirm project match, then extract `"type": "event_msg"` entries where `payload.type` is `"user_message"` or `"agent_message"`
+
+4. Normalize to unified format per message:
+   ```
+   timestamp | role (user/assistant) | content | tool (cc/codex)
+   ```
+
+5. Group by date (`YYYY-MM-DD` from timestamp). For each date write `.vibe-logs/YYYY-MM-DD_{author}.md`:
 
    ```markdown
    # YYYY-MM-DD — {project_name} ({author})
 
-   ## {HH:MM} [{tool}]
+   ## HH:MM [cc|codex]
    **user:** {content}
    **assistant:** {content}
-
-   ## {HH:MM} [{tool}]
-   ...
    ```
 
-   Group consecutive user+assistant exchanges under the same timestamp header.
-   Always overwrite — `log daily` is idempotent.
+   Group consecutive exchanges under the same time header (minute precision).
+   Always overwrite — idempotent.
 
-4. Create `.vibe-logs/` if it doesn't exist.
+6. Create `.vibe-logs/` if it doesn't exist.
 
-5. Confirm: `Logged {N} days → .vibe-logs/ ✓`
+7. Confirm: `Logged {N} days → .vibe-logs/ ✓`
 
 ## log merge
 
@@ -54,34 +58,29 @@ Merge all per-author files for each date into `YYYY-MM-DD_merged.md`.
 
 ### Steps
 
-1. Find all per-author files:
+1. Find all per-author files (exclude `_merged`):
    ```bash
    ls .vibe-logs/????-??-??_*.md 2>/dev/null | grep -v '_merged'
    ```
 
-2. Group by date. For each date that has files:
-   - Read all author files for that date
-   - Parse each entry with its timestamp
-   - Sort all entries by timestamp, then by author name alphabetically for ties
+2. Group by date. For each date with multiple author files:
+   - Parse all entries with timestamps
+   - Sort by timestamp, then by author name alphabetically for ties
    - Write `.vibe-logs/YYYY-MM-DD_merged.md`:
 
    ```markdown
    # YYYY-MM-DD — {project_name} (merged)
 
-   ## {HH:MM} [{tool}] {author}
+   ## HH:MM [cc|codex] {author}
    **user:** {content}
    **assistant:** {content}
-
-   ## {HH:MM} [{tool}] {author}
-   ...
    ```
 
 3. Confirm: `Merged {N} dates → .vibe-logs/ ✓`
 
-## Notes
+## Data sources
 
-- Parser script: `~/.claude/skills/vibe-logger/scripts/parse_sessions.py`
-- CC sessions: `~/.claude/projects/*/` filtered by `cwd`
-- Codex sessions: `~/.codex/sessions/**/` filtered by `turn_context.cwd`
-- Individual files (`YYYY-MM-DD_{author}.md`) can be committed to git
-- Merged files (`YYYY-MM-DD_merged.md`) should be gitignored
+| Tool | JSONL location | Project filter field |
+|------|---------------|---------------------|
+| CC | `~/.claude/projects/*/*.jsonl` | `cwd` in user message |
+| Codex | `~/.codex/sessions/**/*.jsonl` | `payload.cwd` in `turn_context` |
