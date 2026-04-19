@@ -5,6 +5,8 @@ ACTION="${1:-install}"
 SETTINGS="$HOME/.claude/settings.json"
 PLUGIN_DIR="$HOME/.claude/vibe-logger"
 SCRIPT_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/hooks/session-stop"
+SKILL_URL="https://raw.githubusercontent.com/kevinstackio/vibe-logger/main/skills/vibe-logger/SKILL.md"
+SKILL_DIR="$HOME/.claude/skills/vibe-logger"
 
 install_vibe_logger() {
   echo "Installing VibeLogger..."
@@ -18,6 +20,10 @@ install_vibe_logger() {
   mkdir -p "$PLUGIN_DIR"
   curl -fsSL "$SCRIPT_URL" -o "$PLUGIN_DIR/session-stop"
   chmod +x "$PLUGIN_DIR/session-stop"
+
+  # Install skill
+  mkdir -p "$SKILL_DIR"
+  curl -fsSL "$SKILL_URL" -o "$SKILL_DIR/SKILL.md"
 
   # Create settings file if not exists
   if [ ! -f "$SETTINGS" ]; then
@@ -91,9 +97,10 @@ print("VibeLogger uninstalled ✓")
 PYEOF
   fi
 
-  # Remove plugin files
+  # Remove plugin and skill files
   rm -rf "$PLUGIN_DIR"
-  echo "Removed ~/.claude/vibe-logger"
+  rm -rf "$SKILL_DIR"
+  echo "Removed ~/.claude/vibe-logger and ~/.claude/skills/vibe-logger"
 }
 
 case "$ACTION" in
